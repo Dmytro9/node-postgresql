@@ -1,0 +1,30 @@
+###
+GET http://localhost:3000/ HTTP/1.1
+content-type: application/json
+
+
+###
+POST http://localhost:3000/ HTTP/1.1
+content-type: application/json
+
+{
+    "name": "some name",
+    "ingredians": "new ingredians",
+    "directions": "new directions"
+}
+
+
+###
+PUT http://localhost:3000/8 HTTP/1.1
+content-type: application/json
+
+{
+    "name": "updated name",
+    "ingredians": "updated ingredians",
+    "directions": "updated directions"
+}
+
+
+###
+DELETE http://localhost:3000/1 HTTP/1.1
+content-type: application/json
