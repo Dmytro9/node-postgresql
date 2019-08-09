@@ -463,15 +463,295 @@ app.get('/nullif', (req, res) => {
 
 
 /*
- * TIMESTAMP and DATE
+ * Age function
  *   
  * 
  **/
-app.get('/date', (req, res) => {
+app.get('/age', (req, res) => {
 
   pool.query(`
-  SELECT 
+  SELECT *, 
+  AGE(NOW(), date_of_birth) AS age
   FROM person
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+});
+
+
+/*
+ * Primary Keys
+ *   
+ * add to distinguish rows with the same values
+ * 
+ **/
+app.get('/key', (req, res) => {
+
+  pool.query(`
+  SELECT *, 
+  FROM person
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+});
+
+
+/*
+ * Unique constraint
+ *   
+ * 
+ **/
+app.get('/key', (req, res) => {
+
+  pool.query(`
+  CREATE table ...(
+    unique_email_address VARCHAR(50) UNIQUE
+  );
+  insert into ... (unique_email_address) values ('');
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+});
+
+
+/*
+ * CHECK IN
+ *   
+ * 
+ **/
+app.get('/key', (req, res) => {
+
+  pool.query(`
+  CREATE table ...(
+    gender VARCHAR(6) NOT NULL CHECK (gender IN ('Male', 'Female'))
+  );
+  insert into ... (gender) values ('Male');
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+});
+
+
+/*
+ * UPDATE rows
+ *   
+ * 
+ **/
+app.get('/update', (req, res) => {
+
+  pool.query(`
+  UPDATE person 
+  SET email = 'test@gmail.com'
+  WHERE id = 2011
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+});
+
+
+
+/*
+ * ON CONFLICT
+ *   
+ * when insert data with for example id existed (if we set unique column)
+ * 
+ **/
+app.get('/insert', (req, res) => {
+
+  pool.query(`
+  INSERT INTO person 
+  (id, name)
+  VALUES (2017, 'DIMA')
+  ON CONFLICT (id) DO NOTHING
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+});
+
+
+/*
+ * UPSERT
+ *   
+ * change athers fields if email for example is already taken 
+ * 
+ **/
+app.get('/insert', (req, res) => {
+
+  pool.query(`
+  INSERT INTO person ... // update
+  (id, name, email) ... // update
+  VALUES (2017, 'DIMA', dima@gmail.com)
+  ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+});
+
+
+
+/*
+ * Refs
+ *   
+ * in ref table (car) then should exists values for setting  
+ * 
+ **/
+app.get('/refs', (req, res) => {
+
+  pool.query(`
+    CREATE TABLE person (
+      id BIGSERIAL NOT NULL PRIMARY KEY,
+      first_name VARCHAR(50) NOT NULL,
+      last_name VARCHAR(50) NOT NULL,
+      car_id BIGINT REFERENCES car(id),
+      UNIQUE(car_id)
+    )
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+
+  pool.query(`
+    UPDATE person 
+    SET car_id = 2
+    WHERE id = 1
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+});
+
+
+
+/*
+ * JOIN 
+ *   
+ * takes vorewer is common in both tables  
+ * 
+ **/
+app.get('/innerjoin', (req, res) => {
+
+  pool.query(`
+   SELECT * 
+   from person
+   JOIN car
+   ON person.car_id = car.id
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+
+  pool.query(`
+  SELECT person.first_name, car.make, car.model
+  from person
+  JOIN car
+  ON person.car_id = car.id
+ `,
+ (err, result) => {
+ res.send(result.rows);
+ });
+
+
+ // to add also persons without car
+ pool.query(`
+ SELECT person.first_name, car.make, car.model
+ from person
+ LEFT JOIN car 
+ ON person.car_id = car.id
+`,
+(err, result) => {
+res.send(result.rows);
+});
+
+});
+
+
+
+/*
+ * EXPORTING query result to CSV  
+ *   
+ * 
+ **/
+app.get('/innerjoin', (req, res) => {
+
+  pool.query(`
+   SELECT * 
+   from person
+   LEFT JOIN car
+   ON person.car_id = car.id;
+
+   COPY (SELECT *
+    FROM person
+    LEFT JOIN car
+    ON person.car_id = car.id;
+    ) TO
+    '/USERS/code/Desctop/result.csv' DELIMITER ',' CSV HEADER;
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+});
+
+
+
+/*
+ * BIGSERIAL - int auto increment  
+ * BIGSERIAL - int 
+ * 
+ **/
+app.get('/innerjoin', (req, res) => {
+
+  pool.query(`
+   SELECT * 
+   from person
+   LEFT JOIN car
+   ON person.car_id = car.id;
+
+   COPY (SELECT *
+    FROM person
+    LEFT JOIN car
+    ON person.car_id = car.id;
+    ) TO
+    '/USERS/code/Desctop/result.csv' DELIMITER ',' CSV HEADER;
+  `,
+  (err, result) => {
+  res.send(result.rows);
+  });
+
+});
+
+
+
+/*
+ * UUID
+ * to generate unique id for users (for example)  
+ * 
+ **/
+app.get('/UUID', (req, res) => {
+
+  pool.query(`
+    CREATE TABLE person (
+     id UUID NOT NULL PRIMARY KEY,
+     name VARCHAR(100) NOT NULL
+    );
+    INSERT INTO person (id, name) values (uuid_generate_v4() ,'Dima');
   `,
   (err, result) => {
   res.send(result.rows);
